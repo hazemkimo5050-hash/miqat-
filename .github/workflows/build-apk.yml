@@ -1,0 +1,40 @@
+name: Build APK
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - run: npm install
+      - run: npx cap add android
+      - name: Permissions and adhan sound
+        run: |
+          M=android/app/src/main/AndroidManifest.xml
+          P=''
+          for p in POST_NOTIFICATIONS SCHEDULE_EXACT_ALARM USE_EXACT_ALARM ACCESS_FINE_LOCATION ACCESS_COARSE_LOCATION RECEIVE_BOOT_COMPLETED VIBRATE WAKE_LOCK; do
+            P="$P<uses-permission android:name=\"android.permission.$p\"/>"
+          done
+          sed -i "s#<application#$P<application#" $M
+          mkdir -p android/app/src/main/res/raw
+          if [ -f resources/adhan.mp3 ]; then
+            cp resources/adhan.mp3 android/app/src/main/res/raw/adhan.mp3
+          else
+            sudo apt-get update >/dev/null && sudo apt-get install -y ffmpeg >/dev/null
+            ffmpeg -f lavfi -i "sine=frequency=660:duration=5" -q:a 6 android/app/src/main/res/raw/adhan.mp3
+          fi
+      - run: npx cap sync android
+      - run: cd android && chmod +x gradlew && ./gradlew assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: miqat-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
