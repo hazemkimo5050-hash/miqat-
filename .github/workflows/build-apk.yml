@@ -17,11 +17,11 @@ jobs:
           java-version: 17
       - run: npm install
       - run: npx cap add android
-      - name: Permissions and adhan sound
+      - name: Permissions and sounds
         run: |
           M=android/app/src/main/AndroidManifest.xml
           P=''
-          for p in POST_NOTIFICATIONS SCHEDULE_EXACT_ALARM USE_EXACT_ALARM ACCESS_FINE_LOCATION ACCESS_COARSE_LOCATION RECEIVE_BOOT_COMPLETED VIBRATE WAKE_LOCK; do
+          for p in POST_NOTIFICATIONS SCHEDULE_EXACT_ALARM USE_EXACT_ALARM ACCESS_FINE_LOCATION ACCESS_COARSE_LOCATION RECEIVE_BOOT_COMPLETED VIBRATE WAKE_LOCK CAMERA; do
             P="$P<uses-permission android:name=\"android.permission.$p\"/>"
           done
           sed -i "s#<application#$P<application#" $M
@@ -31,6 +31,11 @@ jobs:
           else
             sudo apt-get update >/dev/null && sudo apt-get install -y ffmpeg >/dev/null
             ffmpeg -f lavfi -i "sine=frequency=660:duration=5" -q:a 6 android/app/src/main/res/raw/adhan.mp3
+          fi
+          if [ -f resources/alarm.mp3 ]; then
+            cp resources/alarm.mp3 android/app/src/main/res/raw/alarm.mp3
+          else
+            cp android/app/src/main/res/raw/adhan.mp3 android/app/src/main/res/raw/alarm.mp3
           fi
       - run: npx cap sync android
       - run: cd android && chmod +x gradlew && ./gradlew assembleDebug
