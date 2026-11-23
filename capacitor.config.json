@@ -1,1 +1,12 @@
-{"appId":"com.hazem.miqat","appName":"ميقات","webDir":"www"}
+{
+ "appId": "com.hazem.miqat",
+ "appName": "ميقات",
+ "webDir": "www",
+ "plugins": {
+  "FirebaseAuthentication": {
+   "providers": [
+    "google.com"
+   ]
+  }
+ }
+}
