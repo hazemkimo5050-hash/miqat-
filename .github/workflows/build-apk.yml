@@ -16,12 +16,22 @@ jobs:
           distribution: temurin
           java-version: 17
       - run: npm install
-      - run: npx cap add android
-      - name: Permissions and sounds
+      - name: Firebase plugins (only if google-services.json exists)
         run: |
+          if [ -f google-services.json ]; then
+            npm install --save --ignore-scripts @capacitor-firebase/authentication@^6.1.0 @capacitor-firebase/firestore@^6.1.0
+          fi
+      - run: npx cap add android
+      - name: Signing key, Firebase file, permissions and sounds
+        run: |
+          mkdir -p ~/.android
+          if [ -f resources/debug.keystore ]; then cp resources/debug.keystore ~/.android/debug.keystore; fi
+          if [ -f google-services.json ]; then cp google-services.json android/app/google-services.json; fi
+          sed -i 's/minSdkVersion = 22/minSdkVersion = 23/' android/variables.gradle
+          sed -i 's/^ext {/ext {\n    rgcfaIncludeGoogle = true/' android/variables.gradle
           M=android/app/src/main/AndroidManifest.xml
           P=''
-          for p in POST_NOTIFICATIONS SCHEDULE_EXACT_ALARM USE_EXACT_ALARM ACCESS_FINE_LOCATION ACCESS_COARSE_LOCATION RECEIVE_BOOT_COMPLETED VIBRATE WAKE_LOCK CAMERA; do
+          for p in POST_NOTIFICATIONS SCHEDULE_EXACT_ALARM USE_EXACT_ALARM ACCESS_FINE_LOCATION ACCESS_COARSE_LOCATION RECEIVE_BOOT_COMPLETED VIBRATE WAKE_LOCK; do
             P="$P<uses-permission android:name=\"android.permission.$p\"/>"
           done
           sed -i "s#<application#$P<application#" $M
