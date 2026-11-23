@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "899318961326",
+    "project_id": "miqat-84f3e",
+    "storage_bucket": "miqat-84f3e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:899318961326:android:b2af0ec41be9d194c3c93f",
+        "android_client_info": {
+          "package_name": "com.hazem.miqat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "899318961326-qj8v04i82n0tsg5chmrvhger9ke0b5pk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCOD-SNhRGklmdxKjrvrBfY5m6pLgqAfOY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "899318961326-qj8v04i82n0tsg5chmrvhger9ke0b5pk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
