@@ -27,6 +27,24 @@ jobs:
           mkdir -p ~/.android
           if [ -f resources/debug.keystore ]; then cp resources/debug.keystore ~/.android/debug.keystore; fi
           if [ -f google-services.json ]; then cp google-services.json android/app/google-services.json; fi
+          if [ -f resources/debug.keystore ]; then
+            cat >> android/app/build.gradle <<'GRADLE'
+
+          android {
+              signingConfigs {
+                  debug {
+                      storeFile file("$rootDir/../resources/debug.keystore")
+                      storePassword "android"
+                      keyAlias "androiddebugkey"
+                      keyPassword "android"
+                  }
+              }
+          }
+          GRADLE
+          fi
+          if [ -f resources/debug.keystore ]; then
+            printf '\nandroid {\n    signingConfigs {\n        debug {\n            storeFile file("../../resources/debug.keystore")\n            storePassword "android"\n            keyAlias "androiddebugkey"\n            keyPassword "android"\n        }\n    }\n}\n' >> android/app/build.gradle
+          fi
           sed -i 's/minSdkVersion = 22/minSdkVersion = 23/' android/variables.gradle
           sed -i 's/^ext {/ext {\n    rgcfaIncludeGoogle = true/' android/variables.gradle
           M=android/app/src/main/AndroidManifest.xml
@@ -49,6 +67,16 @@ jobs:
           fi
       - run: npx cap sync android
       - run: cd android && chmod +x gradlew && ./gradlew assembleDebug
+      - name: Signing diagnostics
+        run: |
+          echo "=== keystore in repo ==="
+          if [ -f resources/debug.keystore ]; then keytool -list -v -keystore resources/debug.keystore -storepass android | grep -i "SHA1"; else echo "MISSING resources/debug.keystore"; fi
+          echo "=== APK signing certificate ==="
+          APK=android/app/build/outputs/apk/debug/app-debug.apk
+          AS=$(ls -d $ANDROID_HOME/build-tools/*/apksigner | tail -1)
+          $AS verify --print-certs $APK | grep -i "SHA-1" || true
+          echo "=== certificate_hash in google-services.json ==="
+          grep -o '"certificate_hash": "[0-9a-f]*"' google-services.json || echo "none found"
       - uses: actions/upload-artifact@v4
         with:
           name: miqat-apk
